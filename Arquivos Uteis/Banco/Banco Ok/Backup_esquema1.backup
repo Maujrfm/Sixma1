@@ -1,0 +1,1576 @@
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- TOC entry 2064 (class 0 OID 0)
+-- Dependencies: 199
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- TOC entry 211 (class 1255 OID 16834)
+-- Name: add_data_registro(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION add_data_registro() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+
+declare
+
+data_atual timestamp;
+
+begin
+
+select into data_atual current_timestamp;
+new.reg_data := data_atual;
+
+return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.add_data_registro() OWNER TO postgres;
+
+--
+-- TOC entry 212 (class 1255 OID 16835)
+-- Name: add_data_romaneio(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION add_data_romaneio() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+
+declare
+
+data_atual timestamp;
+
+begin
+
+select into data_atual current_timestamp;
+new.rom_data := data_atual;
+
+return new;
+end;
+				
+$$;
+
+
+ALTER FUNCTION public.add_data_romaneio() OWNER TO postgres;
+
+--
+-- TOC entry 213 (class 1255 OID 16836)
+-- Name: add_registro(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION add_registro() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+
+begin
+
+insert into tb_registro (cod_os, cod_tipo_reg, reg_data, reg_descricao, cod_funcionario)
+values (new.cod_os, '1', new.os_data, 'Entrada de produto na loja. - Registro gerado automaticamente', new.cod_funcionario);
+
+return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.add_registro() OWNER TO postgres;
+
+--
+-- TOC entry 214 (class 1255 OID 16837)
+-- Name: completa_data_criacao(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION completa_data_criacao() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+
+declare
+data_atual timestamp;
+
+begin
+
+select into data_atual current_timestamp;
+
+new.os_data := data_atual;
+
+return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.completa_data_criacao() OWNER TO postgres;
+
+--
+-- TOC entry 215 (class 1255 OID 16838)
+-- Name: cria_juncao(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION cria_juncao() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+declare
+
+marca integer;
+produto integer;
+teste integer;
+
+begin
+
+marca := new.cod_marca;
+produto := new.cod_produto;
+
+select into teste count(*) from tb_juncao where cod_marca = new.cod_marca and cod_produto = new.cod_produto;
+
+if(teste > 0) then
+
+raise notice 'Entrou if';
+
+else
+	raise notice 'Entrou else';
+	insert into tb_juncao (cod_marca, cod_produto) values (marca, produto);
+end if;
+
+
+return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.cria_juncao() OWNER TO postgres;
+
+--
+-- TOC entry 216 (class 1255 OID 16839)
+-- Name: implementa_data(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION implementa_data() RETURNS timestamp without time zone
+    LANGUAGE plpgsql
+    AS $$
+
+declare
+data_atual timestamp;
+
+begin
+
+select into data_atual current_timestamp;
+
+raise notice 'Data atual %', data_atual;
+
+return data_atual;
+
+end;
+$$;
+
+
+ALTER FUNCTION public.implementa_data() OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1255 OID 16840)
+-- Name: reg_devolucao(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION reg_devolucao() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+
+declare
+data_atual timestamp;
+
+begin
+
+select into data_atual current_timestamp;
+
+new.reg_data := data_atual;
+
+update tb_os set cod_tipo_reg = new.cod_tipo_reg where cod_os = new.cod_os;
+
+return new;
+end;
+
+$$;
+
+
+ALTER FUNCTION public.reg_devolucao() OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 161 (class 1259 OID 16841)
+-- Name: tb_backup; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_backup (
+    cod_backup integer NOT NULL,
+    cod_modelo integer NOT NULL,
+    bkp_num_serie character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.tb_backup OWNER TO postgres;
+
+--
+-- TOC entry 162 (class 1259 OID 16844)
+-- Name: tb_backup_cod_backup_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_backup_cod_backup_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_backup_cod_backup_seq OWNER TO postgres;
+
+--
+-- TOC entry 2066 (class 0 OID 0)
+-- Dependencies: 162
+-- Name: tb_backup_cod_backup_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_backup_cod_backup_seq OWNED BY tb_backup.cod_backup;
+
+
+--
+-- TOC entry 195 (class 1259 OID 17095)
+-- Name: tb_cliente; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_cliente (
+    cod_cliente integer NOT NULL,
+    cli_empresa character varying(150) NOT NULL,
+    cli_telefone character varying(150),
+    cli_email character varying(150),
+    cli_cnpj character varying(30) NOT NULL
+);
+
+
+ALTER TABLE public.tb_cliente OWNER TO postgres;
+
+--
+-- TOC entry 194 (class 1259 OID 17093)
+-- Name: tb_cliente_cod_cliente_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_cliente_cod_cliente_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_cliente_cod_cliente_seq OWNER TO postgres;
+
+--
+-- TOC entry 2068 (class 0 OID 0)
+-- Dependencies: 194
+-- Name: tb_cliente_cod_cliente_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_cliente_cod_cliente_seq OWNED BY tb_cliente.cod_cliente;
+
+
+--
+-- TOC entry 163 (class 1259 OID 16851)
+-- Name: tb_empresa; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_empresa (
+    cod_empresa integer NOT NULL,
+    emp_razao character varying(150) NOT NULL,
+    emp_cnpj character varying(30) NOT NULL,
+    emp_endereco character varying(150) NOT NULL,
+    emp_bairro character varying(150) NOT NULL,
+    emp_cidade character varying(150) NOT NULL,
+    emp_estado character varying(100) NOT NULL,
+    emp_cep character varying(25) NOT NULL,
+    emp_telefone character varying(25) NOT NULL
+);
+
+
+ALTER TABLE public.tb_empresa OWNER TO postgres;
+
+--
+-- TOC entry 164 (class 1259 OID 16857)
+-- Name: tb_empresa_cod_empresa_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_empresa_cod_empresa_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_empresa_cod_empresa_seq OWNER TO postgres;
+
+--
+-- TOC entry 2069 (class 0 OID 0)
+-- Dependencies: 164
+-- Name: tb_empresa_cod_empresa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_empresa_cod_empresa_seq OWNED BY tb_empresa.cod_empresa;
+
+
+--
+-- TOC entry 165 (class 1259 OID 16859)
+-- Name: tb_funcionario; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_funcionario (
+    cod_funcionario integer NOT NULL,
+    fun_nome character varying(150) NOT NULL,
+    fun_senha character varying(150) NOT NULL,
+    fun_permissao numeric(10,2) NOT NULL,
+    fun_login character varying(150),
+    fun_apelido character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.tb_funcionario OWNER TO postgres;
+
+--
+-- TOC entry 166 (class 1259 OID 16862)
+-- Name: tb_funcionario_cod_funcionario_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_funcionario_cod_funcionario_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_funcionario_cod_funcionario_seq OWNER TO postgres;
+
+--
+-- TOC entry 2071 (class 0 OID 0)
+-- Dependencies: 166
+-- Name: tb_funcionario_cod_funcionario_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_funcionario_cod_funcionario_seq OWNED BY tb_funcionario.cod_funcionario;
+
+
+--
+-- TOC entry 167 (class 1259 OID 16864)
+-- Name: tb_juncao; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_juncao (
+    cod_juncao integer NOT NULL,
+    cod_marca integer NOT NULL,
+    cod_produto integer NOT NULL
+);
+
+
+ALTER TABLE public.tb_juncao OWNER TO postgres;
+
+--
+-- TOC entry 168 (class 1259 OID 16867)
+-- Name: tb_juncao_cod_juncao_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_juncao_cod_juncao_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_juncao_cod_juncao_seq OWNER TO postgres;
+
+--
+-- TOC entry 2073 (class 0 OID 0)
+-- Dependencies: 168
+-- Name: tb_juncao_cod_juncao_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_juncao_cod_juncao_seq OWNED BY tb_juncao.cod_juncao;
+
+
+--
+-- TOC entry 169 (class 1259 OID 16869)
+-- Name: tb_marca; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_marca (
+    cod_marca integer NOT NULL,
+    marca_descricao character varying(150) NOT NULL,
+    marca_razao character varying(150),
+    marca_endereco character varying(150),
+    marca_cnpj character varying(25),
+    marca_telefone character varying(25),
+    marca_bairro character varying(150),
+    marca_cidade character varying(150),
+    marca_estado character varying(10),
+    marca_cep character varying(20)
+);
+
+
+ALTER TABLE public.tb_marca OWNER TO postgres;
+
+--
+-- TOC entry 170 (class 1259 OID 16875)
+-- Name: tb_marca_cod_marca_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_marca_cod_marca_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_marca_cod_marca_seq OWNER TO postgres;
+
+--
+-- TOC entry 2075 (class 0 OID 0)
+-- Dependencies: 170
+-- Name: tb_marca_cod_marca_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_marca_cod_marca_seq OWNED BY tb_marca.cod_marca;
+
+
+--
+-- TOC entry 171 (class 1259 OID 16877)
+-- Name: tb_modelo; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_modelo (
+    cod_modelo integer NOT NULL,
+    cod_marca integer NOT NULL,
+    cod_produto integer NOT NULL,
+    cod_tipo integer NOT NULL,
+    mod_descricao character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.tb_modelo OWNER TO postgres;
+
+--
+-- TOC entry 172 (class 1259 OID 16880)
+-- Name: tb_modelo_cod_modelo_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_modelo_cod_modelo_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_modelo_cod_modelo_seq OWNER TO postgres;
+
+--
+-- TOC entry 2077 (class 0 OID 0)
+-- Dependencies: 172
+-- Name: tb_modelo_cod_modelo_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_modelo_cod_modelo_seq OWNED BY tb_modelo.cod_modelo;
+
+
+--
+-- TOC entry 173 (class 1259 OID 16882)
+-- Name: tb_os; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_os (
+    cod_os integer NOT NULL,
+    cod_modelo integer NOT NULL,
+    cod_situacao integer NOT NULL,
+    cod_funcionario integer NOT NULL,
+    cod_cliente integer NOT NULL,
+    os_numserie_prod character varying(150) NOT NULL,
+    os_problema character varying(5000),
+    os_obs character varying(5000),
+    os_data date,
+    os_ns_prod_troca character varying(150),
+    cod_tipo_reg integer,
+    cod_problema integer,
+    cod_romaneio integer
+);
+
+
+ALTER TABLE public.tb_os OWNER TO postgres;
+
+--
+-- TOC entry 2078 (class 0 OID 0)
+-- Dependencies: 173
+-- Name: COLUMN tb_os.cod_romaneio; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN tb_os.cod_romaneio IS '
+';
+
+
+--
+-- TOC entry 174 (class 1259 OID 16888)
+-- Name: tb_os_cod_os_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_os_cod_os_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_os_cod_os_seq OWNER TO postgres;
+
+--
+-- TOC entry 2080 (class 0 OID 0)
+-- Dependencies: 174
+-- Name: tb_os_cod_os_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_os_cod_os_seq OWNED BY tb_os.cod_os;
+
+
+--
+-- TOC entry 175 (class 1259 OID 16890)
+-- Name: tb_problema; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_problema (
+    cod_problema integer NOT NULL,
+    prob_descricao character varying(150) NOT NULL,
+    cod_produto integer NOT NULL
+);
+
+
+ALTER TABLE public.tb_problema OWNER TO postgres;
+
+--
+-- TOC entry 176 (class 1259 OID 16893)
+-- Name: tb_problema_cod_problema_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_problema_cod_problema_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_problema_cod_problema_seq OWNER TO postgres;
+
+--
+-- TOC entry 2082 (class 0 OID 0)
+-- Dependencies: 176
+-- Name: tb_problema_cod_problema_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_problema_cod_problema_seq OWNED BY tb_problema.cod_problema;
+
+
+--
+-- TOC entry 177 (class 1259 OID 16895)
+-- Name: tb_produto; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_produto (
+    cod_produto integer NOT NULL,
+    cod_tipo integer NOT NULL,
+    prod_descricao character varying(150)
+);
+
+
+ALTER TABLE public.tb_produto OWNER TO postgres;
+
+--
+-- TOC entry 178 (class 1259 OID 16898)
+-- Name: tb_produto_cod_produto_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_produto_cod_produto_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_produto_cod_produto_seq OWNER TO postgres;
+
+--
+-- TOC entry 2084 (class 0 OID 0)
+-- Dependencies: 178
+-- Name: tb_produto_cod_produto_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_produto_cod_produto_seq OWNED BY tb_produto.cod_produto;
+
+
+--
+-- TOC entry 179 (class 1259 OID 16900)
+-- Name: tb_registro; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_registro (
+    cod_registro integer NOT NULL,
+    cod_os integer NOT NULL,
+    cod_tipo_reg integer NOT NULL,
+    reg_data date NOT NULL,
+    reg_descricao character varying(5000),
+    cod_funcionario integer NOT NULL
+);
+
+
+ALTER TABLE public.tb_registro OWNER TO postgres;
+
+--
+-- TOC entry 180 (class 1259 OID 16906)
+-- Name: tb_registro_cod_registro_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_registro_cod_registro_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_registro_cod_registro_seq OWNER TO postgres;
+
+--
+-- TOC entry 2086 (class 0 OID 0)
+-- Dependencies: 180
+-- Name: tb_registro_cod_registro_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_registro_cod_registro_seq OWNED BY tb_registro.cod_registro;
+
+
+--
+-- TOC entry 181 (class 1259 OID 16908)
+-- Name: tb_romaneio; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_romaneio (
+    cod_romaneio integer NOT NULL,
+    cod_marca integer NOT NULL,
+    rom_data date,
+    rom_status integer NOT NULL,
+    rom_nf character varying(150),
+    cod_tipo integer
+);
+
+
+ALTER TABLE public.tb_romaneio OWNER TO postgres;
+
+--
+-- TOC entry 182 (class 1259 OID 16911)
+-- Name: tb_romaneio_cod_romaneio_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_romaneio_cod_romaneio_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_romaneio_cod_romaneio_seq OWNER TO postgres;
+
+--
+-- TOC entry 2087 (class 0 OID 0)
+-- Dependencies: 182
+-- Name: tb_romaneio_cod_romaneio_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_romaneio_cod_romaneio_seq OWNED BY tb_romaneio.cod_romaneio;
+
+
+--
+-- TOC entry 183 (class 1259 OID 16913)
+-- Name: tb_situacao; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_situacao (
+    cod_situacao integer NOT NULL,
+    sit_descricao character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.tb_situacao OWNER TO postgres;
+
+--
+-- TOC entry 184 (class 1259 OID 16916)
+-- Name: tb_situacao_cod_situacao_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_situacao_cod_situacao_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_situacao_cod_situacao_seq OWNER TO postgres;
+
+--
+-- TOC entry 2089 (class 0 OID 0)
+-- Dependencies: 184
+-- Name: tb_situacao_cod_situacao_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_situacao_cod_situacao_seq OWNED BY tb_situacao.cod_situacao;
+
+
+--
+-- TOC entry 185 (class 1259 OID 16918)
+-- Name: tb_tipo; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_tipo (
+    cod_tipo integer NOT NULL,
+    tipo_descricao character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.tb_tipo OWNER TO postgres;
+
+--
+-- TOC entry 186 (class 1259 OID 16921)
+-- Name: tb_tipo_cod_tipo_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_tipo_cod_tipo_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_tipo_cod_tipo_seq OWNER TO postgres;
+
+--
+-- TOC entry 2091 (class 0 OID 0)
+-- Dependencies: 186
+-- Name: tb_tipo_cod_tipo_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_tipo_cod_tipo_seq OWNED BY tb_tipo.cod_tipo;
+
+
+--
+-- TOC entry 187 (class 1259 OID 16923)
+-- Name: tb_tipo_reg; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE tb_tipo_reg (
+    cod_tipo_reg integer NOT NULL,
+    tipo_reg_descricao character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.tb_tipo_reg OWNER TO postgres;
+
+--
+-- TOC entry 188 (class 1259 OID 16926)
+-- Name: tb_tipo_reg_cod_tipo_reg_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE tb_tipo_reg_cod_tipo_reg_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tb_tipo_reg_cod_tipo_reg_seq OWNER TO postgres;
+
+--
+-- TOC entry 2093 (class 0 OID 0)
+-- Dependencies: 188
+-- Name: tb_tipo_reg_cod_tipo_reg_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE tb_tipo_reg_cod_tipo_reg_seq OWNED BY tb_tipo_reg.cod_tipo_reg;
+
+
+--
+-- TOC entry 189 (class 1259 OID 16928)
+-- Name: vw_modelo; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_modelo AS
+SELECT mod.cod_modelo, mod.mod_descricao AS modelo, mar.marca_descricao AS marca, p.prod_descricao AS produto FROM ((tb_modelo mod JOIN tb_marca mar ON ((mod.cod_marca = mar.cod_marca))) JOIN tb_produto p ON ((mod.cod_produto = p.cod_produto)));
+
+
+ALTER TABLE public.vw_modelo OWNER TO postgres;
+
+--
+-- TOC entry 190 (class 1259 OID 16932)
+-- Name: vw_backup; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_backup AS
+SELECT bkp.cod_modelo, mod.cod_marca, mod.cod_produto, mod.cod_tipo, mod.mod_descricao AS modelo, vmod.marca, vmod.produto, t.tipo_descricao, count(*) AS quantidade FROM (((tb_backup bkp JOIN tb_modelo mod ON ((bkp.cod_modelo = mod.cod_modelo))) JOIN vw_modelo vmod ON ((bkp.cod_modelo = vmod.cod_modelo))) JOIN tb_tipo t ON ((mod.cod_tipo = t.cod_tipo))) GROUP BY bkp.cod_modelo, mod.cod_marca, mod.cod_produto, mod.cod_tipo, mod.mod_descricao, vmod.marca, t.tipo_descricao, vmod.produto ORDER BY t.tipo_descricao, vmod.produto, vmod.marca;
+
+
+ALTER TABLE public.vw_backup OWNER TO postgres;
+
+--
+-- TOC entry 196 (class 1259 OID 17119)
+-- Name: vw_clientes; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_clientes AS
+SELECT tb_cliente.cod_cliente AS cod, tb_cliente.cli_empresa AS nome FROM tb_cliente ORDER BY tb_cliente.cli_empresa;
+
+
+ALTER TABLE public.vw_clientes OWNER TO postgres;
+
+--
+-- TOC entry 197 (class 1259 OID 17123)
+-- Name: vw_inicio; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_inicio AS
+SELECT os.cod_cliente, os.cod_tipo_reg, cli.cli_telefone AS telefone, cli.cli_empresa AS nome, count(*) AS quantidade FROM (tb_os os JOIN tb_cliente cli ON ((os.cod_cliente = cli.cod_cliente))) GROUP BY os.cod_cliente, os.cod_tipo_reg, cli.cli_telefone, cli.cli_empresa ORDER BY cli.cli_empresa;
+
+
+ALTER TABLE public.vw_inicio OWNER TO postgres;
+
+--
+-- TOC entry 191 (class 1259 OID 16945)
+-- Name: vw_juncao; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_juncao AS
+SELECT j.cod_juncao, j.cod_marca, m.marca_descricao AS marca, j.cod_produto, p.prod_descricao AS produto FROM ((tb_juncao j JOIN tb_marca m ON ((j.cod_marca = m.cod_marca))) JOIN tb_produto p ON ((j.cod_produto = p.cod_produto)));
+
+
+ALTER TABLE public.vw_juncao OWNER TO postgres;
+
+--
+-- TOC entry 198 (class 1259 OID 17127)
+-- Name: vw_os; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_os AS
+SELECT o.cod_os, o.os_numserie_prod, o.os_problema, o.os_obs, o.os_data, o.os_ns_prod_troca, c.cli_empresa AS cliente, t.tipo_descricao AS tipo, p.prod_descricao AS produto, mar.marca_descricao AS marca, m.mod_descricao AS modelo, sit.sit_descricao AS situacao, o.cod_cliente, fun.fun_nome AS funcionario, o.cod_tipo_reg, o.cod_modelo, t.cod_tipo, mar.cod_marca, p.cod_produto, o.cod_problema, mar.marca_razao AS fornecedor, o.cod_romaneio FROM (((((((tb_os o JOIN tb_cliente c ON ((o.cod_cliente = c.cod_cliente))) JOIN tb_modelo m ON ((o.cod_modelo = m.cod_modelo))) JOIN tb_tipo t ON ((m.cod_tipo = t.cod_tipo))) JOIN tb_produto p ON ((m.cod_produto = p.cod_produto))) JOIN tb_marca mar ON ((m.cod_marca = mar.cod_marca))) JOIN tb_situacao sit ON ((o.cod_situacao = sit.cod_situacao))) JOIN tb_funcionario fun ON ((o.cod_funcionario = fun.cod_funcionario)));
+
+
+ALTER TABLE public.vw_os OWNER TO postgres;
+
+--
+-- TOC entry 192 (class 1259 OID 16954)
+-- Name: vw_registro; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_registro AS
+SELECT r.cod_registro, r.cod_os, t.tipo_reg_descricao AS tipo, r.reg_data, r.reg_descricao AS descricao, f.fun_nome AS funcionario, r.cod_tipo_reg, r.cod_funcionario FROM ((tb_registro r JOIN tb_tipo_reg t ON ((r.cod_tipo_reg = t.cod_tipo_reg))) JOIN tb_funcionario f ON ((r.cod_funcionario = f.cod_funcionario)));
+
+
+ALTER TABLE public.vw_registro OWNER TO postgres;
+
+--
+-- TOC entry 193 (class 1259 OID 16958)
+-- Name: vw_romaneio; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW vw_romaneio AS
+SELECT r.cod_romaneio, r.cod_marca, r.rom_data, r.rom_status, r.rom_nf, r.cod_tipo, m.marca_descricao AS marca, t.tipo_descricao AS tipo FROM ((tb_romaneio r JOIN tb_marca m ON ((r.cod_marca = m.cod_marca))) JOIN tb_tipo t ON ((r.cod_tipo = t.cod_tipo))) ORDER BY r.cod_romaneio DESC;
+
+
+ALTER TABLE public.vw_romaneio OWNER TO postgres;
+
+--
+-- TOC entry 1883 (class 2604 OID 16963)
+-- Name: cod_backup; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_backup ALTER COLUMN cod_backup SET DEFAULT nextval('tb_backup_cod_backup_seq'::regclass);
+
+
+--
+-- TOC entry 1897 (class 2604 OID 17098)
+-- Name: cod_cliente; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_cliente ALTER COLUMN cod_cliente SET DEFAULT nextval('tb_cliente_cod_cliente_seq'::regclass);
+
+
+--
+-- TOC entry 1884 (class 2604 OID 16965)
+-- Name: cod_empresa; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_empresa ALTER COLUMN cod_empresa SET DEFAULT nextval('tb_empresa_cod_empresa_seq'::regclass);
+
+
+--
+-- TOC entry 1885 (class 2604 OID 16966)
+-- Name: cod_funcionario; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_funcionario ALTER COLUMN cod_funcionario SET DEFAULT nextval('tb_funcionario_cod_funcionario_seq'::regclass);
+
+
+--
+-- TOC entry 1886 (class 2604 OID 16967)
+-- Name: cod_juncao; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_juncao ALTER COLUMN cod_juncao SET DEFAULT nextval('tb_juncao_cod_juncao_seq'::regclass);
+
+
+--
+-- TOC entry 1887 (class 2604 OID 16968)
+-- Name: cod_marca; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_marca ALTER COLUMN cod_marca SET DEFAULT nextval('tb_marca_cod_marca_seq'::regclass);
+
+
+--
+-- TOC entry 1888 (class 2604 OID 16969)
+-- Name: cod_modelo; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_modelo ALTER COLUMN cod_modelo SET DEFAULT nextval('tb_modelo_cod_modelo_seq'::regclass);
+
+
+--
+-- TOC entry 1889 (class 2604 OID 16970)
+-- Name: cod_os; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_os ALTER COLUMN cod_os SET DEFAULT nextval('tb_os_cod_os_seq'::regclass);
+
+
+--
+-- TOC entry 1890 (class 2604 OID 16971)
+-- Name: cod_problema; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_problema ALTER COLUMN cod_problema SET DEFAULT nextval('tb_problema_cod_problema_seq'::regclass);
+
+
+--
+-- TOC entry 1891 (class 2604 OID 16972)
+-- Name: cod_produto; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_produto ALTER COLUMN cod_produto SET DEFAULT nextval('tb_produto_cod_produto_seq'::regclass);
+
+
+--
+-- TOC entry 1892 (class 2604 OID 16973)
+-- Name: cod_registro; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_registro ALTER COLUMN cod_registro SET DEFAULT nextval('tb_registro_cod_registro_seq'::regclass);
+
+
+--
+-- TOC entry 1893 (class 2604 OID 16974)
+-- Name: cod_romaneio; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_romaneio ALTER COLUMN cod_romaneio SET DEFAULT nextval('tb_romaneio_cod_romaneio_seq'::regclass);
+
+
+--
+-- TOC entry 1894 (class 2604 OID 16975)
+-- Name: cod_situacao; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_situacao ALTER COLUMN cod_situacao SET DEFAULT nextval('tb_situacao_cod_situacao_seq'::regclass);
+
+
+--
+-- TOC entry 1895 (class 2604 OID 16976)
+-- Name: cod_tipo; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_tipo ALTER COLUMN cod_tipo SET DEFAULT nextval('tb_tipo_cod_tipo_seq'::regclass);
+
+
+--
+-- TOC entry 1896 (class 2604 OID 16977)
+-- Name: cod_tipo_reg; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_tipo_reg ALTER COLUMN cod_tipo_reg SET DEFAULT nextval('tb_tipo_reg_cod_tipo_reg_seq'::regclass);
+
+
+--
+-- TOC entry 1899 (class 2606 OID 16979)
+-- Name: pk_backup; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_backup
+    ADD CONSTRAINT pk_backup PRIMARY KEY (cod_backup);
+
+
+--
+-- TOC entry 1927 (class 2606 OID 17103)
+-- Name: pk_cliente; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_cliente
+    ADD CONSTRAINT pk_cliente PRIMARY KEY (cod_cliente, cli_cnpj);
+
+
+--
+-- TOC entry 1901 (class 2606 OID 16983)
+-- Name: pk_empresa; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_empresa
+    ADD CONSTRAINT pk_empresa PRIMARY KEY (cod_empresa);
+
+
+--
+-- TOC entry 1903 (class 2606 OID 16985)
+-- Name: pk_funcionario; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_funcionario
+    ADD CONSTRAINT pk_funcionario PRIMARY KEY (cod_funcionario);
+
+
+--
+-- TOC entry 1905 (class 2606 OID 16987)
+-- Name: pk_juncao; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_juncao
+    ADD CONSTRAINT pk_juncao PRIMARY KEY (cod_juncao);
+
+
+--
+-- TOC entry 1907 (class 2606 OID 16989)
+-- Name: pk_marca; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_marca
+    ADD CONSTRAINT pk_marca PRIMARY KEY (cod_marca);
+
+
+--
+-- TOC entry 1909 (class 2606 OID 16991)
+-- Name: pk_modelo; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_modelo
+    ADD CONSTRAINT pk_modelo PRIMARY KEY (cod_modelo);
+
+
+--
+-- TOC entry 1911 (class 2606 OID 16993)
+-- Name: pk_os; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_os
+    ADD CONSTRAINT pk_os PRIMARY KEY (cod_os);
+
+
+--
+-- TOC entry 1913 (class 2606 OID 16995)
+-- Name: pk_problema; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_problema
+    ADD CONSTRAINT pk_problema PRIMARY KEY (cod_problema);
+
+
+--
+-- TOC entry 1915 (class 2606 OID 16997)
+-- Name: pk_produto; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_produto
+    ADD CONSTRAINT pk_produto PRIMARY KEY (cod_produto);
+
+
+--
+-- TOC entry 1917 (class 2606 OID 16999)
+-- Name: pk_registro; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_registro
+    ADD CONSTRAINT pk_registro PRIMARY KEY (cod_registro);
+
+
+--
+-- TOC entry 1919 (class 2606 OID 17001)
+-- Name: pk_romaneio; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_romaneio
+    ADD CONSTRAINT pk_romaneio PRIMARY KEY (cod_romaneio);
+
+
+--
+-- TOC entry 1921 (class 2606 OID 17003)
+-- Name: pk_situacao; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_situacao
+    ADD CONSTRAINT pk_situacao PRIMARY KEY (cod_situacao);
+
+
+--
+-- TOC entry 1923 (class 2606 OID 17005)
+-- Name: pk_tipo; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_tipo
+    ADD CONSTRAINT pk_tipo PRIMARY KEY (cod_tipo);
+
+
+--
+-- TOC entry 1925 (class 2606 OID 17007)
+-- Name: pk_tipo_reg; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY tb_tipo_reg
+    ADD CONSTRAINT pk_tipo_reg PRIMARY KEY (cod_tipo_reg);
+
+
+--
+-- TOC entry 1945 (class 2620 OID 17008)
+-- Name: add_data_registro; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER add_data_registro BEFORE INSERT ON tb_registro FOR EACH ROW EXECUTE PROCEDURE add_data_registro();
+
+
+--
+-- TOC entry 1947 (class 2620 OID 17009)
+-- Name: add_data_romaneio; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER add_data_romaneio BEFORE INSERT ON tb_romaneio FOR EACH ROW EXECUTE PROCEDURE add_data_romaneio();
+
+
+--
+-- TOC entry 1943 (class 2620 OID 17010)
+-- Name: add_registro; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER add_registro AFTER INSERT ON tb_os FOR EACH ROW EXECUTE PROCEDURE add_registro();
+
+
+--
+-- TOC entry 1944 (class 2620 OID 17011)
+-- Name: completa_data_criacao; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER completa_data_criacao BEFORE INSERT ON tb_os FOR EACH ROW EXECUTE PROCEDURE completa_data_criacao();
+
+
+--
+-- TOC entry 1942 (class 2620 OID 17012)
+-- Name: cria_juncao; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER cria_juncao BEFORE INSERT ON tb_modelo FOR EACH ROW EXECUTE PROCEDURE cria_juncao();
+
+
+--
+-- TOC entry 1946 (class 2620 OID 17013)
+-- Name: reg_devolucao; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER reg_devolucao BEFORE INSERT OR UPDATE ON tb_registro FOR EACH ROW EXECUTE PROCEDURE reg_devolucao();
+
+
+--
+-- TOC entry 1928 (class 2606 OID 17014)
+-- Name: fk_backup_modelo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_backup
+    ADD CONSTRAINT fk_backup_modelo FOREIGN KEY (cod_modelo) REFERENCES tb_modelo(cod_modelo);
+
+
+--
+-- TOC entry 1929 (class 2606 OID 17019)
+-- Name: fk_juncao_marca; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_juncao
+    ADD CONSTRAINT fk_juncao_marca FOREIGN KEY (cod_marca) REFERENCES tb_marca(cod_marca);
+
+
+--
+-- TOC entry 1930 (class 2606 OID 17024)
+-- Name: fk_juncao_produto; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_juncao
+    ADD CONSTRAINT fk_juncao_produto FOREIGN KEY (cod_produto) REFERENCES tb_produto(cod_produto);
+
+
+--
+-- TOC entry 1931 (class 2606 OID 17029)
+-- Name: fk_modelo_marca; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_modelo
+    ADD CONSTRAINT fk_modelo_marca FOREIGN KEY (cod_marca) REFERENCES tb_marca(cod_marca);
+
+
+--
+-- TOC entry 1932 (class 2606 OID 17034)
+-- Name: fk_modelo_produto; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_modelo
+    ADD CONSTRAINT fk_modelo_produto FOREIGN KEY (cod_produto) REFERENCES tb_produto(cod_produto);
+
+
+--
+-- TOC entry 1933 (class 2606 OID 17039)
+-- Name: fk_modelo_tipo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_modelo
+    ADD CONSTRAINT fk_modelo_tipo FOREIGN KEY (cod_tipo) REFERENCES tb_tipo(cod_tipo);
+
+
+--
+-- TOC entry 1934 (class 2606 OID 17049)
+-- Name: fk_os_funcionario; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_os
+    ADD CONSTRAINT fk_os_funcionario FOREIGN KEY (cod_funcionario) REFERENCES tb_funcionario(cod_funcionario);
+
+
+--
+-- TOC entry 1935 (class 2606 OID 17054)
+-- Name: fk_os_modelo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_os
+    ADD CONSTRAINT fk_os_modelo FOREIGN KEY (cod_modelo) REFERENCES tb_modelo(cod_modelo);
+
+
+--
+-- TOC entry 1936 (class 2606 OID 17059)
+-- Name: fk_os_situacao; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_os
+    ADD CONSTRAINT fk_os_situacao FOREIGN KEY (cod_situacao) REFERENCES tb_situacao(cod_situacao);
+
+
+--
+-- TOC entry 1937 (class 2606 OID 17064)
+-- Name: fk_produto_tipo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_produto
+    ADD CONSTRAINT fk_produto_tipo FOREIGN KEY (cod_tipo) REFERENCES tb_tipo(cod_tipo);
+
+
+--
+-- TOC entry 1938 (class 2606 OID 17069)
+-- Name: fk_registro_os; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_registro
+    ADD CONSTRAINT fk_registro_os FOREIGN KEY (cod_os) REFERENCES tb_os(cod_os);
+
+
+--
+-- TOC entry 1939 (class 2606 OID 17074)
+-- Name: fk_registro_tipo_reg; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_registro
+    ADD CONSTRAINT fk_registro_tipo_reg FOREIGN KEY (cod_tipo_reg) REFERENCES tb_tipo_reg(cod_tipo_reg);
+
+
+--
+-- TOC entry 1940 (class 2606 OID 17079)
+-- Name: fk_romaneio; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_romaneio
+    ADD CONSTRAINT fk_romaneio FOREIGN KEY (cod_marca) REFERENCES tb_marca(cod_marca);
+
+
+--
+-- TOC entry 1941 (class 2606 OID 17084)
+-- Name: fk_romaneio_tipo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY tb_romaneio
+    ADD CONSTRAINT fk_romaneio_tipo FOREIGN KEY (cod_tipo) REFERENCES tb_tipo(cod_tipo);
+
+
+--
+-- TOC entry 2063 (class 0 OID 0)
+-- Dependencies: 6
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- TOC entry 2065 (class 0 OID 0)
+-- Dependencies: 161
+-- Name: tb_backup; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_backup FROM PUBLIC;
+REVOKE ALL ON TABLE tb_backup FROM postgres;
+GRANT ALL ON TABLE tb_backup TO postgres;
+
+
+--
+-- TOC entry 2067 (class 0 OID 0)
+-- Dependencies: 195
+-- Name: tb_cliente; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_cliente FROM PUBLIC;
+REVOKE ALL ON TABLE tb_cliente FROM postgres;
+GRANT ALL ON TABLE tb_cliente TO postgres;
+
+
+--
+-- TOC entry 2070 (class 0 OID 0)
+-- Dependencies: 165
+-- Name: tb_funcionario; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_funcionario FROM PUBLIC;
+REVOKE ALL ON TABLE tb_funcionario FROM postgres;
+GRANT ALL ON TABLE tb_funcionario TO postgres;
+
+
+--
+-- TOC entry 2072 (class 0 OID 0)
+-- Dependencies: 167
+-- Name: tb_juncao; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_juncao FROM PUBLIC;
+REVOKE ALL ON TABLE tb_juncao FROM postgres;
+GRANT ALL ON TABLE tb_juncao TO postgres;
+
+
+--
+-- TOC entry 2074 (class 0 OID 0)
+-- Dependencies: 169
+-- Name: tb_marca; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_marca FROM PUBLIC;
+REVOKE ALL ON TABLE tb_marca FROM postgres;
+GRANT ALL ON TABLE tb_marca TO postgres;
+
+
+--
+-- TOC entry 2076 (class 0 OID 0)
+-- Dependencies: 171
+-- Name: tb_modelo; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_modelo FROM PUBLIC;
+REVOKE ALL ON TABLE tb_modelo FROM postgres;
+GRANT ALL ON TABLE tb_modelo TO postgres;
+
+
+--
+-- TOC entry 2079 (class 0 OID 0)
+-- Dependencies: 173
+-- Name: tb_os; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_os FROM PUBLIC;
+REVOKE ALL ON TABLE tb_os FROM postgres;
+GRANT ALL ON TABLE tb_os TO postgres;
+
+
+--
+-- TOC entry 2081 (class 0 OID 0)
+-- Dependencies: 175
+-- Name: tb_problema; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_problema FROM PUBLIC;
+REVOKE ALL ON TABLE tb_problema FROM postgres;
+GRANT ALL ON TABLE tb_problema TO postgres;
+
+
+--
+-- TOC entry 2083 (class 0 OID 0)
+-- Dependencies: 177
+-- Name: tb_produto; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_produto FROM PUBLIC;
+REVOKE ALL ON TABLE tb_produto FROM postgres;
+GRANT ALL ON TABLE tb_produto TO postgres;
+
+
+--
+-- TOC entry 2085 (class 0 OID 0)
+-- Dependencies: 179
+-- Name: tb_registro; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_registro FROM PUBLIC;
+REVOKE ALL ON TABLE tb_registro FROM postgres;
+GRANT ALL ON TABLE tb_registro TO postgres;
+
+
+--
+-- TOC entry 2088 (class 0 OID 0)
+-- Dependencies: 183
+-- Name: tb_situacao; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_situacao FROM PUBLIC;
+REVOKE ALL ON TABLE tb_situacao FROM postgres;
+GRANT ALL ON TABLE tb_situacao TO postgres;
+
+
+--
+-- TOC entry 2090 (class 0 OID 0)
+-- Dependencies: 185
+-- Name: tb_tipo; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_tipo FROM PUBLIC;
+REVOKE ALL ON TABLE tb_tipo FROM postgres;
+GRANT ALL ON TABLE tb_tipo TO postgres;
+
+
+--
+-- TOC entry 2092 (class 0 OID 0)
+-- Dependencies: 187
+-- Name: tb_tipo_reg; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE tb_tipo_reg FROM PUBLIC;
+REVOKE ALL ON TABLE tb_tipo_reg FROM postgres;
+GRANT ALL ON TABLE tb_tipo_reg TO postgres;
+
+
+--
+-- TOC entry 2094 (class 0 OID 0)
+-- Dependencies: 189
+-- Name: vw_modelo; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_modelo FROM PUBLIC;
+REVOKE ALL ON TABLE vw_modelo FROM postgres;
+GRANT ALL ON TABLE vw_modelo TO postgres;
+
+
+--
+-- TOC entry 2095 (class 0 OID 0)
+-- Dependencies: 190
+-- Name: vw_backup; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_backup FROM PUBLIC;
+REVOKE ALL ON TABLE vw_backup FROM postgres;
+GRANT ALL ON TABLE vw_backup TO postgres;
+
+
+--
+-- TOC entry 2096 (class 0 OID 0)
+-- Dependencies: 196
+-- Name: vw_clientes; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_clientes FROM PUBLIC;
+REVOKE ALL ON TABLE vw_clientes FROM postgres;
+GRANT ALL ON TABLE vw_clientes TO postgres;
+
+
+--
+-- TOC entry 2097 (class 0 OID 0)
+-- Dependencies: 197
+-- Name: vw_inicio; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_inicio FROM PUBLIC;
+REVOKE ALL ON TABLE vw_inicio FROM postgres;
+GRANT ALL ON TABLE vw_inicio TO postgres;
+
+
+--
+-- TOC entry 2098 (class 0 OID 0)
+-- Dependencies: 191
+-- Name: vw_juncao; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_juncao FROM PUBLIC;
+REVOKE ALL ON TABLE vw_juncao FROM postgres;
+GRANT ALL ON TABLE vw_juncao TO postgres;
+
+
+--
+-- TOC entry 2099 (class 0 OID 0)
+-- Dependencies: 198
+-- Name: vw_os; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_os FROM PUBLIC;
+REVOKE ALL ON TABLE vw_os FROM postgres;
+GRANT ALL ON TABLE vw_os TO postgres;
+
+
+--
+-- TOC entry 2100 (class 0 OID 0)
+-- Dependencies: 192
+-- Name: vw_registro; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE vw_registro FROM PUBLIC;
+REVOKE ALL ON TABLE vw_registro FROM postgres;
+GRANT ALL ON TABLE vw_registro TO postgres;
+
+
+-- Completed on 2014-06-02 11:05:18
+
+--
+-- PostgreSQL database dump complete
+--
+
